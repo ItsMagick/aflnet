@@ -19,7 +19,8 @@ RUN apt-get -y update && \
 
 # Download and compile AFLNet
 ENV LLVM_CONFIG="llvm-config-6.0"
-ENV CPU_TARGET=arm
+# Uncomment if you want arm support
+# ENV CPU_TARGET=arm
 ADD --keep-git-dir=true https://github.com/aflnet/aflnet.git /opt/aflnet
 COPY qemu_mode/build_qemu_support.sh /opt/aflnet/qemu_mode/
 WORKDIR /opt/aflnet
