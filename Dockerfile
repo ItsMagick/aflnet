@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile-upstream:master-labs
-FROM ubuntu:18.04 AS aflnet
+FROM ubuntu:18.04 AS fuzzer
 
 RUN apt-get -y update && \
-    apt-get -y install sudo \
+    apt-get -y install \
     apt-utils \
     build-essential \
     openssl \
@@ -33,10 +33,8 @@ RUN make clean all && \
     cd ../qemu_mode && \
     ./build_qemu_support.sh
 
-# Set up environment variables for AFLNet
-RUN mkdir -p /shared
+FROM scratch AS binaries
 
-RUN cp /opt/aflnet/afl-fuzz /shared/aflnet-fuzz && cp /opt/aflnet/afl-qemu-trace /shared/afl-qemu-trace
-
-VOLUME ["/shared"]
+COPY --from=fuzzer /opt/aflnet/afl-fuzz aflnet-fuzz
+COPY --from=fuzzer /opt/aflnet/afl-qemu-trace afl-qemu-trace
 
