@@ -34,8 +34,9 @@ RUN make clean all && \
     ./build_qemu_support.sh
 
 # Set up environment variables for AFLNet
-ENV AFLNET="/opt/aflnet"
-ENV PATH="${PATH}:${AFLNET}"
-ENV AFL_PATH="${AFLNET}"
-ENV AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 \
-    AFL_SKIP_CPUFREQ=1
+RUN mkdir -p /shared
+
+RUN cp /opt/aflnet/afl-fuzz /shared/aflnet-fuzz && cp /opt/aflnet/afl-qemu-trace /shared/afl-qemu-trace
+
+VOLUME ["/shared"]
+
