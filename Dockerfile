@@ -15,7 +15,8 @@ RUN apt-get -y update && \
     autoconf \
     bison \
     tar \
-    libglib2.0-dev
+    libglib2.0-dev \
+    libc6-dev
 
 # Download and compile AFLNet
 ENV LLVM_CONFIG="llvm-config-6.0"
@@ -27,9 +28,9 @@ WORKDIR /opt/aflnet
 
 RUN chmod +x /opt/aflnet/qemu_mode/build_qemu_support.sh
 
-RUN make clean all && \
+RUN make clean all STATIC=1 && \
     cd llvm_mode && \
-    make && \
+    make STATIC=1&& \
     cd ../qemu_mode && \
     ./build_qemu_support.sh
 
@@ -37,4 +38,5 @@ FROM scratch AS binaries
 
 COPY --from=fuzzer /opt/aflnet/afl-fuzz aflnet-fuzz
 COPY --from=fuzzer /opt/aflnet/afl-qemu-trace afl-qemu-trace
+COPY --from=fuzzer /opt/aflnet/afl-clang-fast afl-clang-fast
 
