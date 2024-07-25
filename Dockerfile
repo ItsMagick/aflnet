@@ -16,27 +16,30 @@ RUN apt-get -y update && \
     bison \
     tar \
     libglib2.0-dev \
-    libc6-dev
-
+    graphviz-dev \
+    libcap-dev \
+    lsb-release \
+    software-properties-common \
+    dirmngr \
+    apt-transport-https
 # Download and compile AFLNet
-ENV LLVM_CONFIG="llvm-config-6.0"
 # Uncomment if you want arm support
 # ENV CPU_TARGET=arm
 ADD --keep-git-dir=true https://github.com/aflnet/aflnet.git /opt/aflnet
 COPY qemu_mode/build_qemu_support.sh /opt/aflnet/qemu_mode/
 WORKDIR /opt/aflnet
 
-RUN chmod +x /opt/aflnet/qemu_mode/build_qemu_support.sh
+RUN wget https://apt.llvm.org/llvm.sh && \
+    chmod +x ./llvm.sh && \
+    ./llvm.sh
 
-RUN make clean all STATIC=1 && \
+RUN make clean all && \
     cd llvm_mode && \
-    make STATIC=1&& \
-    cd ../qemu_mode && \
-    ./build_qemu_support.sh
+    whereis llvm-config \
+    make
 
 FROM scratch AS binaries
 
 COPY --from=fuzzer /opt/aflnet/afl-fuzz aflnet-fuzz
-COPY --from=fuzzer /opt/aflnet/afl-qemu-trace afl-qemu-trace
-COPY --from=fuzzer /opt/aflnet/afl-clang-fast afl-clang-fast
+COPY --from=fuzzer /opt/aflnet/afl-gcc afl-gcc
 
