@@ -21,25 +21,20 @@ RUN apt-get -y update && \
     lsb-release \
     software-properties-common \
     dirmngr \
-    apt-transport-https
+    apt-transport-https \
+    llvm
+
 # Download and compile AFLNet
 # Uncomment if you want arm support
 # ENV CPU_TARGET=arm
-ADD --keep-git-dir=true https://github.com/aflnet/aflnet.git /opt/aflnet
+ADD --keep-git-dir=true https://github.com/ItsMagick/aflnet.git /opt/aflnet
 COPY qemu_mode/build_qemu_support.sh /opt/aflnet/qemu_mode/
+COPY shared /opt/shared
 WORKDIR /opt/aflnet
-
-RUN wget https://apt.llvm.org/llvm.sh && \
-    chmod +x ./llvm.sh && \
-    ./llvm.sh
 
 RUN make clean all && \
     cd llvm_mode && \
-    whereis llvm-config \
     make
 
-FROM scratch AS binaries
-
-COPY --from=fuzzer /opt/aflnet/afl-fuzz aflnet-fuzz
-COPY --from=fuzzer /opt/aflnet/afl-gcc afl-gcc
-
+ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT ["./afl-fuzz -Q -i in -o out -N tcp://127.0.0.1/1883 -P MQTT -D 10000 -q 3 -s 3 -E -K -R -m 1000 ../shared/mosquitto"]
